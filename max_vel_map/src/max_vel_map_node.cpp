@@ -113,12 +113,13 @@ MaxVelMap::convertMap( const nav_msgs::OccupancyGrid& map_msg )
   for(int i=0;i<map->size_x * map->size_y;i++)
   {
     // TODO set occupancy state which reflects max_velocity_map's color
-    if(map_msg.data[i] == 0)
-      map->cells[i].occ_state = -1;
-    else if(map_msg.data[i] == 100)
-      map->cells[i].occ_state = +1;
-    else
-      map->cells[i].occ_state = 0;
+    map->cells[i].occ_state = map_msg.data[i];
+    // if(map_msg.data[i] == 0)
+    //   map->cells[i].occ_state = -1;
+    // else if(map_msg.data[i] == 100)
+    //   map->cells[i].occ_state = +1;
+    // else
+    //   map->cells[i].occ_state = 0;
   }
 
   return map;
