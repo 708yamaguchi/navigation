@@ -3,6 +3,12 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <amcl/map/map.h>
 
+#include <dynamic_reconfigure/DoubleParameter.h>
+#include <dynamic_reconfigure/Reconfigure.h>
+#include <dynamic_reconfigure/Config.h>
+
+#include <algorithm>
+
 class MaxVelMap
 {
   public:
@@ -14,7 +20,14 @@ class MaxVelMap
     ros::Subscriber amcl_sub_;
     ros::Subscriber map_sub_;
     map_t* map_;
-    // geometry_msgs::Point pos_;
+    dynamic_reconfigure::ReconfigureRequest srv_req_;
+    dynamic_reconfigure::ReconfigureResponse srv_resp_;
+    dynamic_reconfigure::DoubleParameter double_param_;
+    dynamic_reconfigure::Config conf_;
+    float max_vel_x_initial_;
+    float min_vel_x_initial_;
+    // float max_vel_theta_initial_;
+    // float min_vel_theta_initial_;
     void freeMapDependentMemory();
     void amclCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg);
     void mapReceived(const nav_msgs::OccupancyGridConstPtr& msg);
@@ -26,19 +39,19 @@ int main(int argc, char **argv)
 {
 
   ros::init(argc, argv, "max_vel_map");
-  // MaxVelMap::MaxVelMap max_vel_map;
   new MaxVelMap();
-  // ros::Rate loop_rate(10);
   ros::spin();
-
   return(0);
 }
 
-MaxVelMap::MaxVelMap() // constructor
-         // map_(NULL),
-         // pos_(NULL)
-         // latest_tf_valid_(false)
+MaxVelMap::MaxVelMap()
 {
+  nh_.getParam("/move_base/TrajectoryPlannerROS/max_vel_x", max_vel_x_initial_);
+  nh_.getParam("/move_base/TrajectoryPlannerROS/min_vel_x", min_vel_x_initial_);
+  // nh_.getParam("/move_base/TrajectoryPlannerROS/max_vel_theta", max_vel_theta_initial_);
+  ROS_INFO("max_vel_x_initial_: %f", max_vel_x_initial_);
+  ROS_INFO("min_vel_x_initial_: %f", min_vel_x_initial_);
+  // ROS_INFO("max_vel_theta_initial_: %f", max_vel_theta_initial_);
   amcl_sub_ = nh_.subscribe("amcl_pose", 100, &MaxVelMap::amclCallback, this);
   map_sub_ = nh_.subscribe("map", 1, &MaxVelMap::mapReceived, this);
 }
@@ -46,6 +59,16 @@ MaxVelMap::MaxVelMap() // constructor
 MaxVelMap::~MaxVelMap()
 {
   freeMapDependentMemory();
+  // restore max_vel parameters
+  conf_.doubles.clear();
+  double_param_.name = "max_vel_x";
+  double_param_.value = max_vel_x_initial_;
+  conf_.doubles.push_back(double_param_);
+  // double_param_.name = "max_vel_theta";
+  // double_param_.value = max_vel_theta_initial_;
+  // conf_.doubles.push_back(double_param_);
+  srv_req_.config = conf_;
+  ros::service::call("/move_base/TrajectoryPlannerROS/set_parameters", srv_req_, srv_resp_);
 }
 
 void MaxVelMap::freeMapDependentMemory()
@@ -61,21 +84,28 @@ void MaxVelMap::amclCallback(const geometry_msgs::PoseWithCovarianceStamped::Con
   float pos_x = msg->pose.pose.position.x;
   float pos_y = msg->pose.pose.position.y;
   float pos_z = msg->pose.pose.position.z;
-  ROS_INFO("Current robot position [%f, %f, %f]", pos_x, pos_y, pos_z);
+  // ROS_INFO("Current robot position [%f, %f, %f]", pos_x, pos_y, pos_z);
 
   if( map_ != NULL ) {
+    // get map pixel value of current position
     int index_x = (int)((pos_x - map_->origin_x) / map_->scale + (map_->size_x / 2.0) - 0.5);
     int index_y = (int)((pos_y - map_->origin_y) / map_->scale + (map_->size_y / 2.0) - 0.5);
-
-    ROS_INFO("index_x: %d, index_y: %d", index_x, index_y);
-
-    int max_vel_ratio = map_->cells[index_x + index_y * map_->size_x].occ_state;
-
-    ROS_INFO("max_vel_ratio: %d", max_vel_ratio);
-
-    // TODO
-    // change max(min)_vel_x(theta) based on max_vel_ratio
-    // NOTE: USE DYNAMIC RECONFIGURE
+    float max_vel_ratio = map_->cells[index_x + index_y * map_->size_x].occ_state / 255.0;
+    // ROS_INFO("index_x: %d, index_y: %d", index_x, index_y);
+    // ROS_INFO("pixel value: %d", map_->cells[index_x + index_y * map_->size_x].occ_state);
+    // ROS_INFO("max_vel_ratio: %f", max_vel_ratio);
+    // set max_vel parameters
+    conf_.doubles.clear();
+    double_param_.name = "max_vel_x";
+    double_param_.value = std::max(max_vel_x_initial_ * max_vel_ratio, min_vel_x_initial_); // avoid too slow movement
+    ROS_INFO("max_vel_x: %f", double_param_.value);
+    conf_.doubles.push_back(double_param_);
+    // double_param_.name = "max_vel_theta";
+    // double_param_.value = std::max(max_vel_theta_initial_ * max_vel_ratio, min_vel_theta_initial_); // avoid too slow movement
+    // ROS_INFO("max_vel_theta: %f", double_param_.value);
+    // conf_.doubles.push_back(double_param_);
+    srv_req_.config = conf_;
+    ros::service::call("/move_base/TrajectoryPlannerROS/set_parameters", srv_req_, srv_resp_);
   }
 }
 
@@ -112,7 +142,6 @@ MaxVelMap::convertMap( const nav_msgs::OccupancyGrid& map_msg )
   ROS_ASSERT(map->cells);
   for(int i=0;i<map->size_x * map->size_y;i++)
   {
-    // TODO set occupancy state which reflects max_velocity_map's color
     map->cells[i].occ_state = (unsigned char)map_msg.data[i]; // black: 0, white: 255
   }
 
