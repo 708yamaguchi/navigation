@@ -84,12 +84,13 @@ void MaxVelMap::amclCallback(const geometry_msgs::PoseWithCovarianceStamped::Con
   float pos_x = msg->pose.pose.position.x;
   float pos_y = msg->pose.pose.position.y;
   float pos_z = msg->pose.pose.position.z;
+  // ROS_INFO("pos_x: %f, pos_y: %f", pos_x, pos_y);
   // ROS_INFO("Current robot position [%f, %f, %f]", pos_x, pos_y, pos_z);
 
   if( map_ != NULL ) {
     // get map pixel value of current position
-    int index_x = (int)((pos_x - map_->origin_x) / map_->scale + (map_->size_x / 2.0) - 0.5);
-    int index_y = (int)((pos_y - map_->origin_y) / map_->scale + (map_->size_y / 2.0) - 0.5);
+    int index_x = (int)((pos_x - map_->origin_x) / map_->scale);
+    int index_y = (int)((pos_y - map_->origin_y) / map_->scale);
     float max_vel_ratio = map_->cells[index_x + index_y * map_->size_x].occ_state / 255.0;
     // ROS_INFO("index_x: %d, index_y: %d", index_x, index_y);
     // ROS_INFO("pixel value: %d", map_->cells[index_x + index_y * map_->size_x].occ_state);
@@ -135,8 +136,10 @@ MaxVelMap::convertMap( const nav_msgs::OccupancyGrid& map_msg )
   map->size_x = map_msg.info.width;
   map->size_y = map_msg.info.height;
   map->scale = map_msg.info.resolution;
-  map->origin_x = map_msg.info.origin.position.x + (map->size_x / 2) * map->scale;
-  map->origin_y = map_msg.info.origin.position.y + (map->size_y / 2) * map->scale;
+  // map->origin_x = map_msg.info.origin.position.x + (map->size_x / 2) * map->scale;
+  // map->origin_y = map_msg.info.origin.position.y + (map->size_y / 2) * map->scale;
+  map->origin_x = map_msg.info.origin.position.x;
+  map->origin_y = map_msg.info.origin.position.y;
   // Convert to player format
   map->cells = (map_cell_t*)malloc(sizeof(map_cell_t)*map->size_x*map->size_y);
   ROS_ASSERT(map->cells);
