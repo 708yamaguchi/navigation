@@ -9,8 +9,9 @@ project(max_velocity_map)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   amcl
-  geometry_msgs
   dynamic_reconfigure
+  geometry_msgs
+  nav_core
   roscpp
 )
 
@@ -122,9 +123,9 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/max_velocity_map.cpp
-# )
+add_library(${PROJECT_NAME}
+  src/max_velocity_map_node.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

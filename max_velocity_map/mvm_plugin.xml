@@ -1,0 +1,8 @@
+<library path="lib/libmax_velocity_map">
+  <!-- <class name="max_velocity_map/MaxVelocityMap" type="max_velocity_map::MaxVelocityMap" base_class_type="nav_core::BaseLocalPlanner"> -->
+  <class name="max_velocity_map/MaxVelocityMap" type="max_velocity_map::MaxVelocityMap" base_class_type="BaseLocalPlanner">
+    <description>
+      A implementation of max velocity map which restricts max velocity of robot based on pre-given map.
+    </description>
+  </class>
+</library>

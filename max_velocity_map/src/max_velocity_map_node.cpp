@@ -2,6 +2,7 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <amcl/map/map.h>
+#include <nav_core/base_local_planner.h>
 
 #include <dynamic_reconfigure/DoubleParameter.h>
 #include <dynamic_reconfigure/Reconfigure.h>
@@ -9,7 +10,9 @@
 
 #include <algorithm>
 
-class MaxVelocityMap
+#include <pluginlib/class_list_macros.h>
+
+class MaxVelocityMap // : public nav_core::BaseLocalPlanner
 {
   public:
     MaxVelocityMap();
@@ -34,6 +37,10 @@ class MaxVelocityMap
     void handleMapMessage(const nav_msgs::OccupancyGrid& msg);
     map_t* convertMap (const nav_msgs::OccupancyGrid& map_msg);
 };
+
+//register this planner as a BaseLocalPlanner plugin
+// PLUGINLIB_EXPORT_CLASS(max_velocity_map::MaxVelocityMap, nav_core::BaseLocalPlanner)
+PLUGINLIB_EXPORT_CLASS(MaxVelocityMap, nav_core::BaseLocalPlanner)
 
 int main(int argc, char **argv)
 {
