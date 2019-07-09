@@ -9,11 +9,11 @@
 
 #include <algorithm>
 
-class MaxVelMap
+class MaxVelocityMap
 {
   public:
-    MaxVelMap();
-    ~MaxVelMap();
+    MaxVelocityMap();
+    ~MaxVelocityMap();
 
   private:
     ros::NodeHandle nh_;
@@ -38,13 +38,13 @@ class MaxVelMap
 int main(int argc, char **argv)
 {
 
-  ros::init(argc, argv, "max_vel_map");
-  new MaxVelMap();
+  ros::init(argc, argv, "max_velocity_map");
+  new MaxVelocityMap();
   ros::spin();
   return(0);
 }
 
-MaxVelMap::MaxVelMap()
+MaxVelocityMap::MaxVelocityMap()
 {
   nh_.getParam("/move_base/TrajectoryPlannerROS/max_vel_x", max_vel_x_initial_);
   nh_.getParam("/move_base/TrajectoryPlannerROS/min_vel_x", min_vel_x_initial_);
@@ -52,11 +52,11 @@ MaxVelMap::MaxVelMap()
   ROS_INFO("max_vel_x_initial_: %f", max_vel_x_initial_);
   ROS_INFO("min_vel_x_initial_: %f", min_vel_x_initial_);
   // ROS_INFO("max_vel_theta_initial_: %f", max_vel_theta_initial_);
-  amcl_sub_ = nh_.subscribe("amcl_pose", 100, &MaxVelMap::amclCallback, this);
-  map_sub_ = nh_.subscribe("map", 1, &MaxVelMap::mapReceived, this);
+  amcl_sub_ = nh_.subscribe("amcl_pose", 100, &MaxVelocityMap::amclCallback, this);
+  map_sub_ = nh_.subscribe("map", 1, &MaxVelocityMap::mapReceived, this);
 }
 
-MaxVelMap::~MaxVelMap()
+MaxVelocityMap::~MaxVelocityMap()
 {
   freeMapDependentMemory();
   // restore max_vel parameters
@@ -71,7 +71,7 @@ MaxVelMap::~MaxVelMap()
   ros::service::call("/move_base/TrajectoryPlannerROS/set_parameters", srv_req_, srv_resp_);
 }
 
-void MaxVelMap::freeMapDependentMemory()
+void MaxVelocityMap::freeMapDependentMemory()
 {
   if( map_ != NULL ) {
     map_free( map_ );
@@ -79,7 +79,7 @@ void MaxVelMap::freeMapDependentMemory()
   }
 }
 
-void MaxVelMap::amclCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
+void MaxVelocityMap::amclCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
 {
   float pos_x = msg->pose.pose.position.x;
   float pos_y = msg->pose.pose.position.y;
@@ -110,12 +110,12 @@ void MaxVelMap::amclCallback(const geometry_msgs::PoseWithCovarianceStamped::Con
   }
 }
 
-void MaxVelMap::mapReceived(const nav_msgs::OccupancyGridConstPtr& msg)
+void MaxVelocityMap::mapReceived(const nav_msgs::OccupancyGridConstPtr& msg)
 {
   handleMapMessage( *msg );
 }
 
-void MaxVelMap::handleMapMessage(const nav_msgs::OccupancyGrid& msg)
+void MaxVelocityMap::handleMapMessage(const nav_msgs::OccupancyGrid& msg)
 {
   ROS_INFO("Received a %d X %d map @ %.3f m/pix\n",
            msg.info.width,
@@ -128,7 +128,7 @@ void MaxVelMap::handleMapMessage(const nav_msgs::OccupancyGrid& msg)
 }
 
 map_t*
-MaxVelMap::convertMap( const nav_msgs::OccupancyGrid& map_msg )
+MaxVelocityMap::convertMap( const nav_msgs::OccupancyGrid& map_msg )
 {
   map_t* map = map_alloc();
   ROS_ASSERT(map);

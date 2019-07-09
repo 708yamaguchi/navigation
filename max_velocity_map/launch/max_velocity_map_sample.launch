@@ -1,0 +1,12 @@
+<launch>
+  <arg name="map_file" default="$(find max_velocity_map)/raw_maps/eng2-7f-0.05.yaml"/>
+
+  <!-- limit max velocity -->
+  <node pkg="max_velocity_map" type="max_velocity_map_node" name="max_velocity_map" output="screen">
+    <remap from="map" to="max_velocity_map"/>
+  </node>
+  <!-- serve up a map -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" >
+    <remap from="map" to="max_velocity_map"/>
+  </node>
+</launch>

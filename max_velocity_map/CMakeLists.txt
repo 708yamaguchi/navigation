@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(max_vel_map)
+project(max_velocity_map)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -105,7 +105,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES max_vel_map
+#  LIBRARIES max_velocity_map
 #  CATKIN_DEPENDS dynamic_reconfigure roscpp
 #  DEPENDS system_lib
 )
@@ -123,7 +123,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/max_vel_map.cpp
+#   src/${PROJECT_NAME}/max_velocity_map.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -134,7 +134,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(max_vel_map_node src/max_vel_map_node.cpp)
+add_executable(max_velocity_map_node src/max_velocity_map_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -144,10 +144,10 @@ add_executable(max_vel_map_node src/max_vel_map_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(max_vel_map_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(max_velocity_map_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(max_vel_map_node
+target_link_libraries(max_velocity_map_node
   ${catkin_LIBRARIES}
 )
 
@@ -191,7 +191,7 @@ target_link_libraries(max_vel_map_node
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_max_vel_map.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_max_velocity_map.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
