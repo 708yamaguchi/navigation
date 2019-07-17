@@ -2,22 +2,16 @@
 <!-- roslaunch max_velocity_map max_velocity_map_sample.launch -->
 
 <!-- for pr1040 -->
-<!-- roslaunch max_velocity_map max_velocity_map_sample.launch max_vel_x:=/move_base_node/DWAPlannerROS/max_vel_x min_vel_x:=/move_base_node/DWAPlannerROS/min_vel_x max_vel_y:=/move_base_node/DWAPlannerROS/max_vel_y min_vel_y:=/move_base_node/DWAPlannerROS/min_vel_y-->
+<!-- roslaunch max_velocity_map max_velocity_map_sample.launch local_planner:=/move_base_node/DWAPlannerROS -->
 
 <launch>
   <arg name="map_file" default="$(find max_velocity_map)/raw_maps/eng2-7f-0.05.yaml"/>
-  <arg name="max_vel_x" default="/move_base/TrajectoryPlannerROS/max_vel_x"/>
-  <arg name="min_vel_x" default="/move_base/TrajectoryPlannerROS/min_vel_x"/>
-  <arg name="max_vel_y" default="/move_base/TrajectoryPlannerROS/max_vel_y"/>
-  <arg name="min_vel_y" default="/move_base/TrajectoryPlannerROS/min_vel_y"/>
+  <arg name="local_planner" default="/move_base/TrajectoryPlannerROS"/>
 
   <!-- limit max velocity -->
   <node pkg="max_velocity_map" type="max_velocity_map_node" name="max_velocity_map" output="screen">
     <remap from="map" to="max_velocity_map"/>
-    <remap from="max_vel_x" to="$(arg max_vel_x)"/>
-    <remap from="min_vel_x" to="$(arg min_vel_x)"/>
-    <remap from="max_vel_y" to="$(arg max_vel_y)"/>
-    <remap from="min_vel_y" to="$(arg min_vel_y)"/>
+    <param name="local_planner" value="$(arg local_planner)"/>
   </node>
   <!-- serve up a map -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" >

@@ -24,6 +24,7 @@ class MaxVelocityMap
     dynamic_reconfigure::ReconfigureResponse srv_resp_;
     dynamic_reconfigure::DoubleParameter double_param_;
     dynamic_reconfigure::Config conf_;
+    std::string local_planner_;
     float max_vel_x_initial_;
     float min_vel_x_initial_;
     float max_vel_y_initial_;
@@ -48,20 +49,25 @@ int main(int argc, char **argv)
 
 MaxVelocityMap::MaxVelocityMap()
 {
-  if(nh_.hasParam("max_vel_x")) {
-    nh_.getParam("max_vel_x", max_vel_x_initial_);
+  // nh_.getParam("~local_planner", local_planner_);
+  ros::param::get("~local_planner", local_planner_);
+  // local_planner_ = "local_planner";
+  ROS_INFO("%s", local_planner_.c_str());
+
+  if(nh_.hasParam(local_planner_ + "/max_vel_x")) {
+    nh_.getParam(local_planner_ + "/max_vel_x", max_vel_x_initial_);
     ROS_INFO("max_vel_x_initial_: %f", max_vel_x_initial_);
   }
-  if(nh_.hasParam("min_vel_x")) {
-    nh_.getParam("min_vel_x", min_vel_x_initial_);
+  if(nh_.hasParam(local_planner_ + "/min_vel_x")) {
+    nh_.getParam(local_planner_ + "/min_vel_x", min_vel_x_initial_);
     ROS_INFO("min_vel_x_initial_: %f", min_vel_x_initial_);
   }
-  if(nh_.hasParam("max_vel_y")) {
-    nh_.getParam("max_vel_y", max_vel_y_initial_);
+  if(nh_.hasParam(local_planner_ + "/max_vel_y")) {
+    nh_.getParam(local_planner_ + "/max_vel_y", max_vel_y_initial_);
     ROS_INFO("max_vel_y_initial_: %f", max_vel_y_initial_);
   }
-  if(nh_.hasParam("min_vel_x")) {
-    nh_.getParam("min_vel_y", min_vel_y_initial_);
+  if(nh_.hasParam(local_planner_ + "/min_vel_x")) {
+    nh_.getParam(local_planner_ + "/min_vel_y", min_vel_y_initial_);
     ROS_INFO("min_vel_y_initial_: %f", min_vel_y_initial_);
   }
   // nh_.getParam("/move_base/TrajectoryPlannerROS/max_vel_theta", max_vel_theta_initial_);
@@ -86,7 +92,7 @@ MaxVelocityMap::~MaxVelocityMap()
   // double_param_.value = max_vel_theta_initial_;
   // conf_.doubles.push_back(double_param_);
   srv_req_.config = conf_;
-  ros::service::call("/move_base/TrajectoryPlannerROS/set_parameters", srv_req_, srv_resp_);
+  ros::service::call(local_planner_ + "/set_parameters", srv_req_, srv_resp_);
 }
 
 void MaxVelocityMap::freeMapDependentMemory()
@@ -123,12 +129,13 @@ void MaxVelocityMap::amclCallback(const geometry_msgs::PoseWithCovarianceStamped
     double_param_.value = std::max(max_vel_y_initial_ * max_vel_ratio, min_vel_y_initial_); // avoid too slow movement
     ROS_INFO("max_vel_y: %f", double_param_.value);
     conf_.doubles.push_back(double_param_);
+
     // double_param_.name = "max_vel_theta";
     // double_param_.value = std::max(max_vel_theta_initial_ * max_vel_ratio, min_vel_theta_initial_); // avoid too slow movement
     // ROS_INFO("max_vel_theta: %f", double_param_.value);
     // conf_.doubles.push_back(double_param_);
     srv_req_.config = conf_;
-    ros::service::call("/move_base/TrajectoryPlannerROS/set_parameters", srv_req_, srv_resp_);
+    ros::service::call(local_planner_ + "/set_parameters", srv_req_, srv_resp_);
   }
 }
 
