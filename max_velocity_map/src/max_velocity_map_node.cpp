@@ -121,7 +121,7 @@ void MaxVelocityMap::amclCallback(const geometry_msgs::PoseWithCovarianceStamped
     // get map pixel value of current position
     int index_x = (int)((pos_x - map_->origin_x) / map_->scale);
     int index_y = (int)((pos_y - map_->origin_y) / map_->scale);
-    float max_vel_ratio = std::max(map_->cells[index_x + index_y * map_->size_x].occ_state / 255.0, 0.1); // avoid too slow movement
+    float max_vel_ratio = std::max(map_->cells[index_x + index_y * map_->size_x].occ_state / 255.0, 0.2); // avoid too slow movement
     // ROS_INFO("index_x: %d, index_y: %d", index_x, index_y);
     // ROS_INFO("pixel value: %d", map_->cells[index_x + index_y * map_->size_x].occ_state);
     // ROS_INFO("max_vel_ratio: %f", max_vel_ratio);
