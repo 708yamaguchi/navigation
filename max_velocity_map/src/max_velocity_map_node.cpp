@@ -85,8 +85,14 @@ MaxVelocityMap::~MaxVelocityMap()
   double_param_.name = "max_vel_x";
   double_param_.value = max_vel_x_initial_;
   conf_.doubles.push_back(double_param_);
+  double_param_.name = "min_vel_x";
+  double_param_.value = min_vel_x_initial_;
+  conf_.doubles.push_back(double_param_);
   double_param_.name = "max_vel_y";
   double_param_.value = max_vel_y_initial_;
+  conf_.doubles.push_back(double_param_);
+  double_param_.name = "min_vel_y";
+  double_param_.value = min_vel_y_initial_;
   conf_.doubles.push_back(double_param_);
   // double_param_.name = "max_vel_theta";
   // double_param_.value = max_vel_theta_initial_;
@@ -115,19 +121,27 @@ void MaxVelocityMap::amclCallback(const geometry_msgs::PoseWithCovarianceStamped
     // get map pixel value of current position
     int index_x = (int)((pos_x - map_->origin_x) / map_->scale);
     int index_y = (int)((pos_y - map_->origin_y) / map_->scale);
-    float max_vel_ratio = map_->cells[index_x + index_y * map_->size_x].occ_state / 255.0;
+    float max_vel_ratio = std::max(map_->cells[index_x + index_y * map_->size_x].occ_state / 255.0, 0.1); // avoid too slow movement
     // ROS_INFO("index_x: %d, index_y: %d", index_x, index_y);
     // ROS_INFO("pixel value: %d", map_->cells[index_x + index_y * map_->size_x].occ_state);
     // ROS_INFO("max_vel_ratio: %f", max_vel_ratio);
     // set max_vel parameters
     conf_.doubles.clear();
     double_param_.name = "max_vel_x";
-    double_param_.value = std::max(max_vel_x_initial_ * max_vel_ratio, min_vel_x_initial_); // avoid too slow movement
+    double_param_.value = max_vel_x_initial_ * max_vel_ratio;
     ROS_INFO("max_vel_x: %f", double_param_.value);
     conf_.doubles.push_back(double_param_);
+    double_param_.name = "min_vel_x";
+    double_param_.value = min_vel_x_initial_ * max_vel_ratio;
+    ROS_INFO("min_vel_x: %f", double_param_.value);
+    conf_.doubles.push_back(double_param_);
     double_param_.name = "max_vel_y";
-    double_param_.value = std::max(max_vel_y_initial_ * max_vel_ratio, min_vel_y_initial_); // avoid too slow movement
+    double_param_.value = max_vel_y_initial_ * max_vel_ratio;
     ROS_INFO("max_vel_y: %f", double_param_.value);
+    conf_.doubles.push_back(double_param_);
+    double_param_.name = "min_vel_y";
+    double_param_.value = min_vel_y_initial_ * max_vel_ratio;
+    ROS_INFO("min_vel_y: %f", double_param_.value);
     conf_.doubles.push_back(double_param_);
 
     // double_param_.name = "max_vel_theta";
