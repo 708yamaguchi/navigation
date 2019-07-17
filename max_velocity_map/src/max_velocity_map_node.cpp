@@ -26,6 +26,8 @@ class MaxVelocityMap
     dynamic_reconfigure::Config conf_;
     float max_vel_x_initial_;
     float min_vel_x_initial_;
+    float max_vel_y_initial_;
+    float min_vel_y_initial_;
     // float max_vel_theta_initial_;
     // float min_vel_theta_initial_;
     void freeMapDependentMemory();
@@ -46,11 +48,24 @@ int main(int argc, char **argv)
 
 MaxVelocityMap::MaxVelocityMap()
 {
-  nh_.getParam("/move_base/TrajectoryPlannerROS/max_vel_x", max_vel_x_initial_);
-  nh_.getParam("/move_base/TrajectoryPlannerROS/min_vel_x", min_vel_x_initial_);
+  if(nh_.hasParam("max_vel_x")) {
+    nh_.getParam("max_vel_x", max_vel_x_initial_);
+    ROS_INFO("max_vel_x_initial_: %f", max_vel_x_initial_);
+  }
+  if(nh_.hasParam("min_vel_x")) {
+    nh_.getParam("min_vel_x", min_vel_x_initial_);
+    ROS_INFO("min_vel_x_initial_: %f", min_vel_x_initial_);
+  }
+  if(nh_.hasParam("max_vel_y")) {
+    nh_.getParam("max_vel_y", max_vel_y_initial_);
+    ROS_INFO("max_vel_y_initial_: %f", max_vel_y_initial_);
+  }
+  if(nh_.hasParam("min_vel_x")) {
+    nh_.getParam("min_vel_y", min_vel_y_initial_);
+    ROS_INFO("min_vel_y_initial_: %f", min_vel_y_initial_);
+  }
   // nh_.getParam("/move_base/TrajectoryPlannerROS/max_vel_theta", max_vel_theta_initial_);
-  ROS_INFO("max_vel_x_initial_: %f", max_vel_x_initial_);
-  ROS_INFO("min_vel_x_initial_: %f", min_vel_x_initial_);
+
   // ROS_INFO("max_vel_theta_initial_: %f", max_vel_theta_initial_);
   amcl_sub_ = nh_.subscribe("amcl_pose", 100, &MaxVelocityMap::amclCallback, this);
   map_sub_ = nh_.subscribe("map", 1, &MaxVelocityMap::mapReceived, this);
@@ -63,6 +78,9 @@ MaxVelocityMap::~MaxVelocityMap()
   conf_.doubles.clear();
   double_param_.name = "max_vel_x";
   double_param_.value = max_vel_x_initial_;
+  conf_.doubles.push_back(double_param_);
+  double_param_.name = "max_vel_y";
+  double_param_.value = max_vel_y_initial_;
   conf_.doubles.push_back(double_param_);
   // double_param_.name = "max_vel_theta";
   // double_param_.value = max_vel_theta_initial_;
@@ -100,6 +118,10 @@ void MaxVelocityMap::amclCallback(const geometry_msgs::PoseWithCovarianceStamped
     double_param_.name = "max_vel_x";
     double_param_.value = std::max(max_vel_x_initial_ * max_vel_ratio, min_vel_x_initial_); // avoid too slow movement
     ROS_INFO("max_vel_x: %f", double_param_.value);
+    conf_.doubles.push_back(double_param_);
+    double_param_.name = "max_vel_y";
+    double_param_.value = std::max(max_vel_y_initial_ * max_vel_ratio, min_vel_y_initial_); // avoid too slow movement
+    ROS_INFO("max_vel_y: %f", double_param_.value);
     conf_.doubles.push_back(double_param_);
     // double_param_.name = "max_vel_theta";
     // double_param_.value = std::max(max_vel_theta_initial_ * max_vel_ratio, min_vel_theta_initial_); // avoid too slow movement
