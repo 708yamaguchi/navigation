@@ -9,6 +9,8 @@
 
 #include <algorithm>
 
+#include <signal.h>
+
 class MaxVelocityMap
 {
   public:
@@ -38,11 +40,19 @@ class MaxVelocityMap
     map_t* convertMap (const nav_msgs::OccupancyGrid& map_msg);
 };
 
+MaxVelocityMap* mvm;
+
+void reset_params(int sig)
+{
+  delete mvm;
+  ros::shutdown();
+}
+
 int main(int argc, char **argv)
 {
-
   ros::init(argc, argv, "max_velocity_map");
-  new MaxVelocityMap();
+  mvm = new MaxVelocityMap();
+  signal(SIGINT, reset_params);
   ros::spin();
   return(0);
 }
