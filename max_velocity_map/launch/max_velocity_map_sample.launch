@@ -9,7 +9,7 @@
   <arg name="local_planner" default="/move_base/TrajectoryPlannerROS"/>
 
   <!-- limit max velocity -->
-  <node pkg="max_velocity_map" type="max_velocity_map_node" name="max_velocity_map" output="screen">
+  <node pkg="max_velocity_map" type="max_velocity_map_node" name="max_velocity_node" output="screen">
     <remap from="max_velocity_map" to="max_velocity_map"/>
     <param name="local_planner" value="$(arg local_planner)"/>
   </node>

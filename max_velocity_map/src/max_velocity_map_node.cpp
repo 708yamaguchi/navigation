@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "max_velocity_map");
+  ros::init(argc, argv, "max_velocity_map_node");
   mvm = new MaxVelocityMap();
   signal(SIGINT, reset_params);
   ros::spin();
