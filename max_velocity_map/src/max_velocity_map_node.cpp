@@ -39,7 +39,7 @@ MaxVelocityMap::MaxVelocityMap()
 
   // ROS_INFO("max_vel_theta_initial_: %f", max_vel_theta_initial_);
   amcl_sub_ = nh_.subscribe("amcl_pose", 100, &MaxVelocityMap::amclCallback, this);
-  map_sub_ = nh_.subscribe("map", 1, &MaxVelocityMap::mapReceived, this);
+  map_sub_ = nh_.subscribe("max_velocity_map", 1, &MaxVelocityMap::mapReceived, this);
   max_vel_x_pub_ = nh_.advertise<std_msgs::Float32>("max_vel_x", 1000);
   min_vel_x_pub_ = nh_.advertise<std_msgs::Float32>("min_vel_x", 1000);
   max_vel_y_pub_ = nh_.advertise<std_msgs::Float32>("max_vel_y", 1000);
