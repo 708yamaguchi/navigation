@@ -124,6 +124,22 @@ public:
   void setCost(unsigned int mx, unsigned int my, unsigned char cost);
 
   /**
+   * @brief  Get the raw value of a cell in the map
+   * @param mx The x coordinate of the cell
+   * @param my The y coordinate of the cell
+   * @return The value of the cell
+   */
+  unsigned char getRaw(unsigned int mx, unsigned int my) const;
+
+  /**
+   * @brief  Set the raw value of a cell in the map
+   * @param mx The x coordinate of the cell
+   * @param my The y coordinate of the cell
+   * @param raw The Raw value to set the cell to
+   */
+  void setRaw(unsigned int mx, unsigned int my, unsigned char raw);
+
+  /**
    * @brief  Convert from map coordinates to world coordinates
    * @param  mx The x map coordinate
    * @param  my The y map coordinate
@@ -190,6 +206,12 @@ public:
    * @return A pointer to the underlying unsigned char array storing cost values
    */
   unsigned char* getCharMap() const;
+
+  /**
+   * @brief  Will return a pointer to the underlying unsigned char array used as the map
+   * @return A pointer to the underlying unsigned char array storing raw map values
+   */
+  unsigned char* getRawMap() const;
 
   /**
    * @brief  Accessor for the x size of the costmap in cells
@@ -424,6 +446,7 @@ protected:
   double origin_x_;
   double origin_y_;
   unsigned char* costmap_;
+  unsigned char* raw_map_;
   unsigned char default_value_;
 
   class MarkCell

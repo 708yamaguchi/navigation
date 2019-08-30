@@ -229,6 +229,17 @@ void Costmap2DROS::resetOldParameters(ros::NodeHandle& nh)
     move_parameter(nh, map_layer, "track_unknown_space", false);
   }
 
+  if (nh.hasParam("max_velocity_map") && nh.getParam("max_velocity_map", flag) && flag)
+  {
+    map["name"] = XmlRpc::XmlRpcValue("max_velocity_layer");
+    map["type"] = XmlRpc::XmlRpcValue("costmap_2d::MaxVelocityLayer");
+    super_map.setStruct(&map);
+    plugins.push_back(super_map);
+
+    ros::NodeHandle max_velocity_map(nh, "max_velocity_layer");
+    move_parameter(nh, max_velocity_map, "max_velocity_map_topic");
+  }
+
   ros::NodeHandle obstacles(nh, "obstacle_layer");
   if (nh.getParam("map_type", s) && s == "voxel")
   {
