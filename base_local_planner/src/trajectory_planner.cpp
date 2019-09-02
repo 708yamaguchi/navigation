@@ -69,6 +69,8 @@ namespace base_local_planner{
       max_vel_x_ = config.max_vel_x;
       min_vel_x_ = config.min_vel_x;
 
+      speed_limit_ratio_ = config.speed_limit_ratio;
+
       max_vel_th_ = config.max_vel_theta;
       min_vel_th_ = config.min_vel_theta;
       min_in_place_vel_th_ = config.min_in_place_vel_theta;
@@ -572,14 +574,6 @@ namespace base_local_planner{
       min_vel_theta = max(min_vel_th_, vtheta - acc_theta * sim_time_);
     }
 
-    ///////////////////////////////////////////
-    // here, we can write max_vel_ratio process
-    // tf::Stamped<tf::Pose> global_pose;
-    // TODO
-    // if (!costmap_ros_->getRobotPose(global_pose)) {
-    //   return;
-    // }
-    // costmap_ros_->getRobotPose(global_pose)
     unsigned int mx, my;
     unsigned char raw_value;
     double speed_limit_ratio;
@@ -592,13 +586,11 @@ namespace base_local_planner{
       speed_limit_ratio = 1.0; // default speed
     }
     else {
-      speed_limit_ratio = 0.3; // TODO: we should set speed_limit_ratio_ as rosparam (or dynamic reconfigure param)
+      speed_limit_ratio = speed_limit_ratio_;
       ROS_INFO("Low speed now");
     }
     max_vel_x = std::max(speed_limit_ratio * max_vel_x, min_vel_x); // avoid the case of min_vel_x > max_vel_x
     max_vel_theta = std::max(speed_limit_ratio * max_vel_theta, min_vel_theta); // avoid the case of min_vel_th > max_vel_th
-    // here, we can write max_vel_ratio process
-    ///////////////////////////////////////////
 
     //we want to sample the velocity space regularly
     double dvx = (max_vel_x - min_vel_x) / (vx_samples_ - 1);
