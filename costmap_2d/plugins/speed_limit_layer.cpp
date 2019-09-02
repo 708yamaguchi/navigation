@@ -63,6 +63,7 @@ void SpeedLimitLayer::onInitialize()
 
   std::string map_topic;
   nh.param("speed_limit_map_topic", map_topic, std::string("speed_limit_map"));
+  nh.param("speed_limit_threshold", speed_limit_threshold_, 100);
   nh.param("first_map_only", first_map_only_, false);
   nh.param("subscribe_to_updates", subscribe_to_updates_, false);
 
@@ -136,9 +137,8 @@ void SpeedLimitLayer::matchSize()
 
 unsigned char SpeedLimitLayer::interpretValue(unsigned char value)
 {
-  // check if the static value is above the low_speed_threshold
-  double low_speed_threshold_ = 120; // this should be rosparam (not dynamic param)
-  if ( value >= low_speed_threshold_ )
+  // check if the static value is above the peed_limit_threshold_
+  if ( value >= speed_limit_threshold_ )
     return DEFAULT_SPEED;
   else
     return LOW_SPEED;

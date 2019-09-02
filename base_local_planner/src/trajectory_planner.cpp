@@ -582,28 +582,21 @@ namespace base_local_planner{
     // costmap_ros_->getRobotPose(global_pose)
     unsigned int mx, my;
     unsigned char raw_value;
-    double max_vel_ratio;
+    double speed_limit_ratio;
     // costmap_->worldToMap(global_pose.getOrigin().x(), global_pose.getOrigin().y(), mx, my);
     costmap_.worldToMap(x, y, mx, my);
     raw_value = costmap_.getRaw(mx, my);
     ROS_INFO("raw_value[%u][%u]: %hhu", mx, my, raw_value);
 
-    // for (int ii=0; ii < 240; ii++) {
-    //   for (int jj=0; jj < 240; jj++) {
-    //     ROS_INFO("raw_value[%u][%u]: %hhu", ii, jj, costmap_.getRaw(ii, jj));
-    //   }
-    // }
-
     if ( raw_value == 255 ) {
-      max_vel_ratio = 1.0; // default speed
+      speed_limit_ratio = 1.0; // default speed
     }
     else {
-      double max_vel_ratio_ = 0.3; // this should be rosparam (not dynamic param)
-      max_vel_ratio = max_vel_ratio_;
+      speed_limit_ratio = 0.3; // TODO: we should set speed_limit_ratio_ as rosparam (or dynamic reconfigure param)
       ROS_INFO("Low speed now");
     }
-    max_vel_x = std::max(max_vel_ratio * max_vel_x, min_vel_x); // avoid the case of min_vel_x > max_vel_x
-    max_vel_theta = std::max(max_vel_ratio * max_vel_theta, min_vel_theta); // avoid the case of min_vel_th > max_vel_th
+    max_vel_x = std::max(speed_limit_ratio * max_vel_x, min_vel_x); // avoid the case of min_vel_x > max_vel_x
+    max_vel_theta = std::max(speed_limit_ratio * max_vel_theta, min_vel_theta); // avoid the case of min_vel_th > max_vel_th
     // here, we can write max_vel_ratio process
     ///////////////////////////////////////////
 
@@ -805,7 +798,7 @@ namespace base_local_planner{
       for(unsigned int i = 0; i < y_vels_.size(); ++i){
         vtheta_samp = 0;
         vy_samp = y_vels_[i];
-        vy_samp = vy_samp * max_vel_ratio;
+        vy_samp = vy_samp * speed_limit_ratio;
         //sample completely horizontal trajectories
         generateTrajectory(x, y, theta, vx, vy, vtheta, vx_samp, vy_samp, vtheta_samp,
             acc_x, acc_y, acc_theta, impossible_cost, *comp_traj);
