@@ -105,7 +105,7 @@ target_link_libraries(costmap_2d
 
 add_library(layers
   plugins/inflation_layer.cpp
-  plugins/max_velocity_layer.cpp
+  plugins/speed_limit_layer.cpp
   plugins/obstacle_layer.cpp
   plugins/static_layer.cpp
   plugins/voxel_layer.cpp

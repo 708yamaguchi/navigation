@@ -53,11 +53,11 @@ namespace costmap_2d
 static const unsigned char DEFAULT_SPEED = 255;
 static const unsigned char LOW_SPEED = 0;
 
-class MaxVelocityLayer : public CostmapLayer
+class SpeedLimitLayer : public CostmapLayer
 {
 public:
-  MaxVelocityLayer();
-  virtual ~MaxVelocityLayer();
+  SpeedLimitLayer();
+  virtual ~SpeedLimitLayer();
   virtual void onInitialize();
   virtual void activate();
   virtual void deactivate();

@@ -37,24 +37,24 @@
  *         David V. Lu!!
  *********************************************************************/
 
-#include <costmap_2d/max_velocity_layer.h>
+#include <costmap_2d/speed_limit_layer.h>
 #include <costmap_2d/costmap_math.h>
 #include <pluginlib/class_list_macros.h>
 
-PLUGINLIB_EXPORT_CLASS(costmap_2d::MaxVelocityLayer, costmap_2d::Layer)
+PLUGINLIB_EXPORT_CLASS(costmap_2d::SpeedLimitLayer, costmap_2d::Layer)
 
 namespace costmap_2d
 {
 
-MaxVelocityLayer::MaxVelocityLayer() : dsrv_(NULL) {}
+SpeedLimitLayer::SpeedLimitLayer() : dsrv_(NULL) {}
 
-MaxVelocityLayer::~MaxVelocityLayer()
+SpeedLimitLayer::~SpeedLimitLayer()
 {
   if (dsrv_)
     delete dsrv_;
 }
 
-void MaxVelocityLayer::onInitialize()
+void SpeedLimitLayer::onInitialize()
 {
   ros::NodeHandle nh("~/" + name_), g_nh;
   current_ = true;
@@ -62,7 +62,7 @@ void MaxVelocityLayer::onInitialize()
   global_frame_ = layered_costmap_->getGlobalFrameID();
 
   std::string map_topic;
-  nh.param("max_velocity_map_topic", map_topic, std::string("max_velocity_map"));
+  nh.param("speed_limit_map_topic", map_topic, std::string("speed_limit_map"));
   nh.param("first_map_only", first_map_only_, false);
   nh.param("subscribe_to_updates", subscribe_to_updates_, false);
 
@@ -74,7 +74,7 @@ void MaxVelocityLayer::onInitialize()
     // atode %s nashini modosu (see static_layer.cpp)
     ROS_INFO("Requesting the map [%s]...", map_topic.c_str());
     // atode modosu
-    map_sub_ = g_nh.subscribe(map_topic, 1, &MaxVelocityLayer::incomingMap, this);
+    map_sub_ = g_nh.subscribe(map_topic, 1, &SpeedLimitLayer::incomingMap, this);
     map_received_ = false;
     has_updated_data_ = false;
 
@@ -90,7 +90,7 @@ void MaxVelocityLayer::onInitialize()
     if (subscribe_to_updates_)
     {
       ROS_INFO("Subscribing to updates");
-      map_update_sub_ = g_nh.subscribe(map_topic + "_updates", 10, &MaxVelocityLayer::incomingUpdate, this);
+      map_update_sub_ = g_nh.subscribe(map_topic + "_updates", 10, &SpeedLimitLayer::incomingUpdate, this);
 
     }
   }
@@ -106,11 +106,11 @@ void MaxVelocityLayer::onInitialize()
 
   dsrv_ = new dynamic_reconfigure::Server<costmap_2d::GenericPluginConfig>(nh);
   dynamic_reconfigure::Server<costmap_2d::GenericPluginConfig>::CallbackType cb = boost::bind(
-      &MaxVelocityLayer::reconfigureCB, this, _1, _2);
+      &SpeedLimitLayer::reconfigureCB, this, _1, _2);
   dsrv_->setCallback(cb);
 }
 
-void MaxVelocityLayer::reconfigureCB(costmap_2d::GenericPluginConfig &config, uint32_t level)
+void SpeedLimitLayer::reconfigureCB(costmap_2d::GenericPluginConfig &config, uint32_t level)
 {
   if (config.enabled != enabled_)
   {
@@ -122,7 +122,7 @@ void MaxVelocityLayer::reconfigureCB(costmap_2d::GenericPluginConfig &config, ui
   }
 }
 
-void MaxVelocityLayer::matchSize()
+void SpeedLimitLayer::matchSize()
 {
   // If we are using rolling costmap, the static map size is
   //   unrelated to the size of the layered costmap
@@ -134,36 +134,17 @@ void MaxVelocityLayer::matchSize()
   }
 }
 
-unsigned char MaxVelocityLayer::interpretValue(unsigned char value)
+unsigned char SpeedLimitLayer::interpretValue(unsigned char value)
 {
-  // return 100;
-  // return value;
-
   // check if the static value is above the low_speed_threshold
   double low_speed_threshold_ = 120; // this should be rosparam (not dynamic param)
   if ( value >= low_speed_threshold_ )
-    return DEFAULT_SPEED; // we should use MACRO ?
+    return DEFAULT_SPEED;
   else
-    return LOW_SPEED; // we should use MACRO ?
-
-  // we should interpret value
-  // for example, default speed <-> medium speed <-> lowe speed (equals to min_vel_hoge)
-  // Or we should avoid multiple speed level because it may causes non-continuous speed navigation. (Namely, we make default speed mode and low speed mode only)
-
-  // StaticLayer
-  // if (track_unknown_space_ && value == unknown_cost_value_)
-  //   return NO_INFORMATION;
-  // else if (!track_unknown_space_ && value == unknown_cost_value_)
-  //   return FREE_SPACE;
-  // else if (value >= lethal_threshold_)
-  //   return LETHAL_OBSTACLE;
-  // else if (trinary_costmap_)
-  //   return FREE_SPACE;
-  // double scale = (double) value / lethal_threshold_;
-  // return scale * LETHAL_OBSTACLE;
+    return LOW_SPEED;
 }
 
-void MaxVelocityLayer::incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map)
+void SpeedLimitLayer::incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map)
 {
   unsigned int size_x = new_map->info.width, size_y = new_map->info.height;
 
@@ -223,7 +204,7 @@ void MaxVelocityLayer::incomingMap(const nav_msgs::OccupancyGridConstPtr& new_ma
   }
 }
 
-void MaxVelocityLayer::incomingUpdate(const map_msgs::OccupancyGridUpdateConstPtr& update)
+void SpeedLimitLayer::incomingUpdate(const map_msgs::OccupancyGridUpdateConstPtr& update)
 {
   unsigned int di = 0;
   for (unsigned int y = 0; y < update->height ; y++)
@@ -242,19 +223,19 @@ void MaxVelocityLayer::incomingUpdate(const map_msgs::OccupancyGridUpdateConstPt
   has_updated_data_ = true;
 }
 
-void MaxVelocityLayer::activate()
+void SpeedLimitLayer::activate()
 {
   onInitialize();
 }
 
-void MaxVelocityLayer::deactivate()
+void SpeedLimitLayer::deactivate()
 {
   map_sub_.shutdown();
   if (subscribe_to_updates_)
     map_update_sub_.shutdown();
 }
 
-void MaxVelocityLayer::reset()
+void SpeedLimitLayer::reset()
 {
   if (first_map_only_)
   {
@@ -266,7 +247,7 @@ void MaxVelocityLayer::reset()
   }
 }
 
-void MaxVelocityLayer::updateBounds(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y,
+void SpeedLimitLayer::updateBounds(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y,
                                double* max_x, double* max_y)
 {
 
@@ -290,7 +271,7 @@ void MaxVelocityLayer::updateBounds(double robot_x, double robot_y, double robot
   has_updated_data_ = false;
 }
 
-void MaxVelocityLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j)
+void SpeedLimitLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j)
 {
   if (!map_received_)
     return;
@@ -298,43 +279,51 @@ void MaxVelocityLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i
   if (!enabled_)
     return;
 
-  // TODO: we should include rolling window processing
-  // TODO: we should see static layer and imitate it.
-
-  // If rolling window, the master_grid is unlikely to have same coordinates as this layer
-  unsigned int mx, my;
-  double wx, wy;
-  // Might even be in a different frame
-  tf::StampedTransform transform;
-  try
+  if (!layered_costmap_->isRolling())
   {
-    tf_->lookupTransform(map_frame_, global_frame_, ros::Time(0), transform);
+    // if not rolling, the layered costmap (master_grid) has same coordinates as this layer
+    if (!use_maximum_)
+      updateWithTrueOverwrite(master_grid, min_i, min_j, max_i, max_j);
+    else
+      updateWithMax(master_grid, min_i, min_j, max_i, max_j);
   }
-  catch (tf::TransformException ex)
+  else
   {
-    ROS_ERROR("%s", ex.what());
-    return;
-  }
-
-  // ROS_INFO("min_i: %d, min_j: %d, max_i: %d, max_j: %d", min_i, min_j, max_i, max_j);
-  unsigned int index = 0;
-  // Copy map data given proper transformations
-  for (unsigned int i = min_i; i < max_i; ++i)
-  {
-    for (unsigned int j = min_j; j < max_j; ++j)
+    // If rolling window, the master_grid is unlikely to have same coordinates as this layer
+    unsigned int mx, my;
+    double wx, wy;
+    // Might even be in a different frame
+    tf::StampedTransform transform;
+    try
     {
-      // Convert master_grid coordinates (i,j) into global_frame_(wx,wy) coordinates
-      layered_costmap_->getCostmap()->mapToWorld(i, j, wx, wy);
-      // Transform from global_frame_ to map_frame_
-      tf::Point p(wx, wy, 0);
-      p = transform(p);
-      // Set master_grid with cell from map
-      if (worldToMap(p.x(), p.y(), mx, my))
+      tf_->lookupTransform(map_frame_, global_frame_, ros::Time(0), transform);
+    }
+    catch (tf::TransformException ex)
+    {
+      ROS_ERROR("%s", ex.what());
+      return;
+    }
+
+    // ROS_INFO("min_i: %d, min_j: %d, max_i: %d, max_j: %d", min_i, min_j, max_i, max_j);
+    unsigned int index = 0;
+    // Copy map data given proper transformations
+    for (unsigned int i = min_i; i < max_i; ++i)
+    {
+      for (unsigned int j = min_j; j < max_j; ++j)
       {
-        master_grid.setRaw(i, j, getRaw(mx, my));
-        // master_grid.setRaw(i, j, raw_map_[index]); // OK
+        // Convert master_grid coordinates (i,j) into global_frame_(wx,wy) coordinates
+        layered_costmap_->getCostmap()->mapToWorld(i, j, wx, wy);
+        // Transform from global_frame_ to map_frame_
+        tf::Point p(wx, wy, 0);
+        p = transform(p);
+        // Set master_grid with cell from map
+        if (worldToMap(p.x(), p.y(), mx, my))
+        {
+          master_grid.setRaw(i, j, getRaw(mx, my));
+          // master_grid.setRaw(i, j, raw_map_[index]); // OK
+        }
+        ++index;
       }
-      ++index;
     }
   }
 }

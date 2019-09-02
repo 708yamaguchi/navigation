@@ -167,7 +167,7 @@ Costmap2DROS::Costmap2DROS(std::string name, tf::TransformListener& tf) :
   publisher_ = new Costmap2DPublisher(&private_nh, layered_costmap_->getCostmap(), global_frame_, "costmap",
                                       always_send_full_costmap);
   bool flag;
-  if (private_nh.hasParam("max_velocity_map") && private_nh.getParam("max_velocity_map", flag) && flag)
+  if (private_nh.hasParam("speed_limit_map") && private_nh.getParam("speed_limit_map", flag) && flag)
     speedmap_publisher_ = new Costmap2DPublisher(&private_nh, layered_costmap_->getCostmap(), global_frame_, "speedmap",
                                                  always_send_full_costmap);
 
@@ -236,15 +236,15 @@ void Costmap2DROS::resetOldParameters(ros::NodeHandle& nh)
     move_parameter(nh, map_layer, "track_unknown_space", false);
   }
 
-  if (nh.hasParam("max_velocity_map") && nh.getParam("max_velocity_map", flag) && flag)
+  if (nh.hasParam("speed_limit_map") && nh.getParam("speed_limit_map", flag) && flag)
   {
-    map["name"] = XmlRpc::XmlRpcValue("max_velocity_layer");
-    map["type"] = XmlRpc::XmlRpcValue("costmap_2d::MaxVelocityLayer");
+    map["name"] = XmlRpc::XmlRpcValue("speed_limit_layer");
+    map["type"] = XmlRpc::XmlRpcValue("costmap_2d::SpeedLimitLayer");
     super_map.setStruct(&map);
     plugins.push_back(super_map);
 
-    ros::NodeHandle max_velocity_map(nh, "max_velocity_layer");
-    move_parameter(nh, max_velocity_map, "max_velocity_map_topic");
+    ros::NodeHandle speed_limit_map(nh, "speed_limit_layer");
+    move_parameter(nh, speed_limit_map, "speed_limit_map_topic");
   }
 
   ros::NodeHandle obstacles(nh, "obstacle_layer");

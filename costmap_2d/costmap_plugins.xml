@@ -3,7 +3,7 @@
     <class type="costmap_2d::InflationLayer"  base_class_type="costmap_2d::Layer">
       <description>Inflates obstacles to speed collision checking and to make robot prefer to stay away from obstacles.</description>
     </class>
-    <class type="costmap_2d::MaxVelocityLayer"     base_class_type="costmap_2d::Layer">
+    <class type="costmap_2d::SpeedLimitLayer"     base_class_type="costmap_2d::Layer">
       <description>Listens to OccupancyGrid messages to restrict max velocity of robot.</description>
     </class>
     <class type="costmap_2d::ObstacleLayer"   base_class_type="costmap_2d::Layer">
