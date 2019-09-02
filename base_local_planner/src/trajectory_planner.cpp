@@ -587,6 +587,13 @@ namespace base_local_planner{
     costmap_.worldToMap(x, y, mx, my);
     raw_value = costmap_.getRaw(mx, my);
     ROS_INFO("raw_value[%u][%u]: %hhu", mx, my, raw_value);
+
+    // for (int ii=0; ii < 240; ii++) {
+    //   for (int jj=0; jj < 240; jj++) {
+    //     ROS_INFO("raw_value[%u][%u]: %hhu", ii, jj, costmap_.getRaw(ii, jj));
+    //   }
+    // }
+
     if ( raw_value == 255 ) {
       max_vel_ratio = 1.0; // default speed
     }

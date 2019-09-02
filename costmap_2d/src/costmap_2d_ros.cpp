@@ -164,12 +164,9 @@ Costmap2DROS::Costmap2DROS(std::string name, tf::TransformListener& tf) :
 
   setUnpaddedRobotFootprint(makeFootprintFromParams(private_nh));
 
-  ROS_INFO("1111111111111");
-
   publisher_ = new Costmap2DPublisher(&private_nh, layered_costmap_->getCostmap(), global_frame_, "costmap",
                                       always_send_full_costmap);
   bool flag;
-  ROS_INFO("2222222222222");
   if (private_nh.hasParam("max_velocity_map") && private_nh.getParam("max_velocity_map", flag) && flag)
     speedmap_publisher_ = new Costmap2DPublisher(&private_nh, layered_costmap_->getCostmap(), global_frame_, "speedmap",
                                                  always_send_full_costmap);

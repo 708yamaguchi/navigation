@@ -392,7 +392,7 @@ namespace base_local_planner {
     unsigned int mx, my;
     unsigned char raw_value;
     costmap_->worldToMap(global_pose.getOrigin().x(), global_pose.getOrigin().y(), mx, my);
-    ROS_INFO("raw_value[%u][%u]: %hhu", mx, my, costmap_->getRaw(mx, my));
+    // ROS_INFO("raw_value[%u][%u]: %hhu", mx, my, costmap_->getRaw(mx, my));
 
     std::vector<geometry_msgs::PoseStamped> transformed_plan;
     //get the global plan in our frame

@@ -136,6 +136,9 @@ void MaxVelocityLayer::matchSize()
 
 unsigned char MaxVelocityLayer::interpretValue(unsigned char value)
 {
+  // return 100;
+  // return value;
+
   // check if the static value is above the low_speed_threshold
   double low_speed_threshold_ = 120; // this should be rosparam (not dynamic param)
   if ( value >= low_speed_threshold_ )
@@ -312,6 +315,9 @@ void MaxVelocityLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i
     ROS_ERROR("%s", ex.what());
     return;
   }
+
+  // ROS_INFO("min_i: %d, min_j: %d, max_i: %d, max_j: %d", min_i, min_j, max_i, max_j);
+  unsigned int index = 0;
   // Copy map data given proper transformations
   for (unsigned int i = min_i; i < max_i; ++i)
   {
@@ -326,7 +332,9 @@ void MaxVelocityLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i
       if (worldToMap(p.x(), p.y(), mx, my))
       {
         master_grid.setRaw(i, j, getRaw(mx, my));
+        // master_grid.setRaw(i, j, raw_map_[index]); // OK
       }
+      ++index;
     }
   }
 }
