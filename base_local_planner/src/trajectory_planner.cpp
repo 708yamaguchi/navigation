@@ -68,7 +68,7 @@ namespace base_local_planner{
 
       max_vel_x_ = config.max_vel_x;
       min_vel_x_ = config.min_vel_x;
-      
+
       max_vel_th_ = config.max_vel_theta;
       min_vel_th_ = config.min_vel_theta;
       min_in_place_vel_th_ = config.min_in_place_vel_theta;
@@ -110,7 +110,7 @@ namespace base_local_planner{
       heading_lookahead_ = config.heading_lookahead;
 
       holonomic_robot_ = config.holonomic_robot;
-      
+
       backup_vel_ = config.escape_vel;
 
       dwa_ = config.dwa;
@@ -135,7 +135,7 @@ namespace base_local_planner{
       }
 
       y_vels_ = y_vels;
-      
+
   }
 
   TrajectoryPlanner::TrajectoryPlanner(WorldModel& world_model,
@@ -572,6 +572,33 @@ namespace base_local_planner{
       min_vel_theta = max(min_vel_th_, vtheta - acc_theta * sim_time_);
     }
 
+    ///////////////////////////////////////////
+    // here, we can write max_vel_ratio process
+    // tf::Stamped<tf::Pose> global_pose;
+    // TODO
+    // if (!costmap_ros_->getRobotPose(global_pose)) {
+    //   return;
+    // }
+    // costmap_ros_->getRobotPose(global_pose)
+    unsigned int mx, my;
+    unsigned char raw_value;
+    double max_vel_ratio;
+    // costmap_->worldToMap(global_pose.getOrigin().x(), global_pose.getOrigin().y(), mx, my);
+    costmap_.worldToMap(x, y, mx, my);
+    raw_value = costmap_.getRaw(mx, my);
+    ROS_INFO("raw_value[%u][%u]: %hhu", mx, my, raw_value);
+    if ( raw_value == 255 ) {
+      max_vel_ratio = 1.0; // default speed
+    }
+    else {
+      double max_vel_ratio_ = 0.3; // this should be rosparam (not dynamic param)
+      max_vel_ratio = max_vel_ratio_;
+      ROS_INFO("Low speed now");
+    }
+    max_vel_x = std::max(max_vel_ratio * max_vel_x, min_vel_x); // avoid the case of min_vel_x > max_vel_x
+    max_vel_theta = std::max(max_vel_ratio * max_vel_theta, min_vel_theta); // avoid the case of min_vel_th > max_vel_th
+    // here, we can write max_vel_ratio process
+    ///////////////////////////////////////////
 
     //we want to sample the velocity space regularly
     double dvx = (max_vel_x - min_vel_x) / (vx_samples_ - 1);
@@ -771,6 +798,7 @@ namespace base_local_planner{
       for(unsigned int i = 0; i < y_vels_.size(); ++i){
         vtheta_samp = 0;
         vy_samp = y_vels_[i];
+        vy_samp = vy_samp * max_vel_ratio;
         //sample completely horizontal trajectories
         generateTrajectory(x, y, theta, vx, vy, vtheta, vx_samp, vy_samp, vtheta_samp,
             acc_x, acc_y, acc_theta, impossible_cost, *comp_traj);
@@ -1002,5 +1030,3 @@ namespace base_local_planner{
   }
 
 };
-
-

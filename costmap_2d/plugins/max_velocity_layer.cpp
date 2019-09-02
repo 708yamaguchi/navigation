@@ -134,6 +134,32 @@ void MaxVelocityLayer::matchSize()
   }
 }
 
+unsigned char MaxVelocityLayer::interpretValue(unsigned char value)
+{
+  // check if the static value is above the low_speed_threshold
+  double low_speed_threshold_ = 120; // this should be rosparam (not dynamic param)
+  if ( value >= low_speed_threshold_ )
+    return DEFAULT_SPEED; // we should use MACRO ?
+  else
+    return LOW_SPEED; // we should use MACRO ?
+
+  // we should interpret value
+  // for example, default speed <-> medium speed <-> lowe speed (equals to min_vel_hoge)
+  // Or we should avoid multiple speed level because it may causes non-continuous speed navigation. (Namely, we make default speed mode and low speed mode only)
+
+  // StaticLayer
+  // if (track_unknown_space_ && value == unknown_cost_value_)
+  //   return NO_INFORMATION;
+  // else if (!track_unknown_space_ && value == unknown_cost_value_)
+  //   return FREE_SPACE;
+  // else if (value >= lethal_threshold_)
+  //   return LETHAL_OBSTACLE;
+  // else if (trinary_costmap_)
+  //   return FREE_SPACE;
+  // double scale = (double) value / lethal_threshold_;
+  // return scale * LETHAL_OBSTACLE;
+}
+
 void MaxVelocityLayer::incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map)
 {
   unsigned int size_x = new_map->info.width, size_y = new_map->info.height;
@@ -173,7 +199,7 @@ void MaxVelocityLayer::incomingMap(const nav_msgs::OccupancyGridConstPtr& new_ma
     for (unsigned int j = 0; j < size_x; ++j)
     {
       unsigned char value = new_map->data[index];
-      raw_map_[index] = value;
+      raw_map_[index] = interpretValue(value);
       ++index;
     }
   }
@@ -203,7 +229,7 @@ void MaxVelocityLayer::incomingUpdate(const map_msgs::OccupancyGridUpdateConstPt
     for (unsigned int x = 0; x < update->width ; x++)
     {
       unsigned int index = index_base + x + update->x;
-      raw_map_[index] = update->data[di++];
+      raw_map_[index] = interpretValue(update->data[di++]);
     }
   }
   x_ = update->x;
@@ -268,6 +294,9 @@ void MaxVelocityLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i
 
   if (!enabled_)
     return;
+
+  // TODO: we should include rolling window processing
+  // TODO: we should see static layer and imitate it.
 
   // If rolling window, the master_grid is unlikely to have same coordinates as this layer
   unsigned int mx, my;

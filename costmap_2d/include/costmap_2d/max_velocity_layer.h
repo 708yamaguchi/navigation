@@ -50,6 +50,9 @@
 namespace costmap_2d
 {
 
+static const unsigned char DEFAULT_SPEED = 255;
+static const unsigned char LOW_SPEED = 0;
+
 class MaxVelocityLayer : public CostmapLayer
 {
 public:
@@ -76,6 +79,8 @@ private:
   void incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map);
   void incomingUpdate(const map_msgs::OccupancyGridUpdateConstPtr& update);
   void reconfigureCB(costmap_2d::GenericPluginConfig &config, uint32_t level);
+
+  unsigned char interpretValue(unsigned char value);
 
   std::string global_frame_;  ///< @brief The global frame for the costmap
   std::string map_frame_;  /// @brief frame that map is located in

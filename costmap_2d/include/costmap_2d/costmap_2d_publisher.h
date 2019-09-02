@@ -96,6 +96,7 @@ private:
   ros::NodeHandle* node;
   Costmap2D* costmap_;
   std::string global_frame_;
+  std::string topic_name_;
   unsigned int x0_, xn_, y0_, yn_;
   double saved_origin_x_, saved_origin_y_;
   bool active_;

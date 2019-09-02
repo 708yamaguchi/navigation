@@ -73,6 +73,7 @@ Costmap2DROS::Costmap2DROS(std::string name, tf::TransformListener& tf) :
     last_publish_(0),
     plugin_loader_("costmap_2d", "costmap_2d::Layer"),
     publisher_(NULL),
+    speedmap_publisher_(NULL),
     dsrv_(NULL),
     footprint_padding_(0.0)
 {
@@ -163,8 +164,15 @@ Costmap2DROS::Costmap2DROS(std::string name, tf::TransformListener& tf) :
 
   setUnpaddedRobotFootprint(makeFootprintFromParams(private_nh));
 
+  ROS_INFO("1111111111111");
+
   publisher_ = new Costmap2DPublisher(&private_nh, layered_costmap_->getCostmap(), global_frame_, "costmap",
                                       always_send_full_costmap);
+  bool flag;
+  ROS_INFO("2222222222222");
+  if (private_nh.hasParam("max_velocity_map") && private_nh.getParam("max_velocity_map", flag) && flag)
+    speedmap_publisher_ = new Costmap2DPublisher(&private_nh, layered_costmap_->getCostmap(), global_frame_, "speedmap",
+                                                 always_send_full_costmap);
 
   // create a thread to handle updating the map
   stop_updates_ = false;
@@ -199,6 +207,8 @@ Costmap2DROS::~Costmap2DROS()
   }
   if (publisher_ != NULL)
     delete publisher_;
+  if (speedmap_publisher_ != NULL)
+    delete speedmap_publisher_;
 
   delete layered_costmap_;
   delete dsrv_;
@@ -425,11 +435,13 @@ void Costmap2DROS::mapUpdateLoop(double frequency)
       unsigned int x0, y0, xn, yn;
       layered_costmap_->getBounds(&x0, &xn, &y0, &yn);
       publisher_->updateBounds(x0, xn, y0, yn);
+      speedmap_publisher_->updateBounds(x0, xn, y0, yn);
 
       ros::Time now = ros::Time::now();
       if (last_publish_ + publish_cycle < now)
       {
         publisher_->publishCostmap();
+        speedmap_publisher_->publishCostmap();
         last_publish_ = now;
       }
     }
