@@ -587,7 +587,7 @@ namespace base_local_planner{
     }
     else {
       speed_limit_ratio = speed_limit_ratio_;
-      ROS_INFO("Low speed now");
+      ROS_INFO("Limit the robot speed now.");
     }
     max_vel_x = std::max(speed_limit_ratio * max_vel_x, min_vel_x); // avoid the case of min_vel_x > max_vel_x
     max_vel_theta = std::max(speed_limit_ratio * max_vel_theta, min_vel_theta); // avoid the case of min_vel_th > max_vel_th
