@@ -47,11 +47,11 @@ char* Costmap2DPublisher::cost_translation_table_ = NULL;
 Costmap2DPublisher::Costmap2DPublisher(ros::NodeHandle * ros_node, Costmap2D* costmap, std::string global_frame,
                                        std::string topic_name, bool always_send_full_costmap) :
     node(ros_node), costmap_(costmap), global_frame_(global_frame), active_(false),
-    always_send_full_costmap_(always_send_full_costmap)
+    always_send_full_costmap_(always_send_full_costmap), topic_name_(topic_name)
 {
-  costmap_pub_ = ros_node->advertise<nav_msgs::OccupancyGrid>(topic_name, 1,
+  costmap_pub_ = ros_node->advertise<nav_msgs::OccupancyGrid>(topic_name_, 1,
                                                     boost::bind(&Costmap2DPublisher::onNewSubscription, this, _1));
-  costmap_update_pub_ = ros_node->advertise<map_msgs::OccupancyGridUpdate>(topic_name + "_updates", 1);
+  costmap_update_pub_ = ros_node->advertise<map_msgs::OccupancyGridUpdate>(topic_name_ + "_updates", 1);
 
   if (cost_translation_table_ == NULL)
   {
@@ -110,10 +110,20 @@ void Costmap2DPublisher::prepareGrid()
 
   grid_.data.resize(grid_.info.width * grid_.info.height);
 
-  unsigned char* data = costmap_->getCharMap();
-  for (unsigned int i = 0; i < grid_.data.size(); i++)
-  {
-    grid_.data[i] = cost_translation_table_[ data[ i ]];
+  unsigned char* data;
+  if ( topic_name_ != std::string("speed_limit_map") ) {
+    data = costmap_->getCharMap();
+    for (unsigned int i = 0; i < grid_.data.size(); i++)
+      {
+        grid_.data[i] = cost_translation_table_[ data[ i ]];
+      }
+  }
+  else {
+    data = costmap_->getSpeedLimitMap();
+    for (unsigned int i = 0; i < grid_.data.size(); i++)
+    {
+      grid_.data[i] = data[ i ];
+    }
   }
 }
 
@@ -154,8 +164,14 @@ void Costmap2DPublisher::publishCostmap()
     {
       for (unsigned int x = x0_; x < xn_; x++)
       {
-        unsigned char cost = costmap_->getCost(x, y);
-        update.data[i++] = cost_translation_table_[ cost ];
+        if ( topic_name_ != std::string("speed_limit_map") ) {
+          unsigned char cost = costmap_->getCost(x, y);
+          update.data[i++] = cost_translation_table_[ cost ];
+        }
+        else {
+          unsigned char speed_limit = costmap_->getSpeedLimit(x, y);
+          update.data[i++] = speed_limit;
+        }
       }
     }
     costmap_update_pub_.publish(update);

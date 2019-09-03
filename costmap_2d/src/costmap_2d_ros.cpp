@@ -73,6 +73,7 @@ Costmap2DROS::Costmap2DROS(std::string name, tf::TransformListener& tf) :
     last_publish_(0),
     plugin_loader_("costmap_2d", "costmap_2d::Layer"),
     publisher_(NULL),
+    speedlimitmap_publisher_(NULL),
     dsrv_(NULL),
     footprint_padding_(0.0)
 {
@@ -165,6 +166,10 @@ Costmap2DROS::Costmap2DROS(std::string name, tf::TransformListener& tf) :
 
   publisher_ = new Costmap2DPublisher(&private_nh, layered_costmap_->getCostmap(), global_frame_, "costmap",
                                       always_send_full_costmap);
+  bool flag;
+  if (private_nh.hasParam("speed_limit_map") && private_nh.getParam("speed_limit_map", flag) && flag)
+    speedlimitmap_publisher_ = new Costmap2DPublisher(&private_nh, layered_costmap_->getCostmap(), global_frame_, "speed_limit_map",
+                                                 always_send_full_costmap);
 
   // create a thread to handle updating the map
   stop_updates_ = false;
@@ -199,6 +204,8 @@ Costmap2DROS::~Costmap2DROS()
   }
   if (publisher_ != NULL)
     delete publisher_;
+  if (speedlimitmap_publisher_ != NULL)
+    delete speedlimitmap_publisher_;
 
   delete layered_costmap_;
   delete dsrv_;
@@ -227,6 +234,17 @@ void Costmap2DROS::resetOldParameters(ros::NodeHandle& nh)
     move_parameter(nh, map_layer, "unknown_cost_value");
     move_parameter(nh, map_layer, "lethal_cost_threshold");
     move_parameter(nh, map_layer, "track_unknown_space", false);
+  }
+
+  if (nh.hasParam("speed_limit_map") && nh.getParam("speed_limit_map", flag) && flag)
+  {
+    map["name"] = XmlRpc::XmlRpcValue("speed_limit_layer");
+    map["type"] = XmlRpc::XmlRpcValue("costmap_2d::SpeedLimitLayer");
+    super_map.setStruct(&map);
+    plugins.push_back(super_map);
+
+    ros::NodeHandle speed_limit_map(nh, "speed_limit_layer");
+    move_parameter(nh, speed_limit_map, "speed_limit_map_topic");
   }
 
   ros::NodeHandle obstacles(nh, "obstacle_layer");
@@ -414,11 +432,13 @@ void Costmap2DROS::mapUpdateLoop(double frequency)
       unsigned int x0, y0, xn, yn;
       layered_costmap_->getBounds(&x0, &xn, &y0, &yn);
       publisher_->updateBounds(x0, xn, y0, yn);
+      speedlimitmap_publisher_->updateBounds(x0, xn, y0, yn);
 
       ros::Time now = ros::Time::now();
       if (last_publish_ + publish_cycle < now)
       {
         publisher_->publishCostmap();
+        speedlimitmap_publisher_->publishCostmap();
         last_publish_ = now;
       }
     }
