@@ -303,6 +303,7 @@ namespace base_local_planner {
       bool holonomic_robot_; ///< @brief Is the robot holonomic or not? 
       
       double max_vel_x_, min_vel_x_, max_vel_th_, min_vel_th_, min_in_place_vel_th_; ///< @brief Velocity limits for the controller
+      double speed_limit_ratio_; ///< @brief limit the robot's max velocity
 
       double backup_vel_; ///< @brief The velocity to use while backing up
 

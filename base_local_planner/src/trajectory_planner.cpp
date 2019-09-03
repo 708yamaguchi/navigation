@@ -37,6 +37,7 @@
 
 #include <base_local_planner/trajectory_planner.h>
 #include <costmap_2d/footprint.h>
+#include <costmap_2d/speed_limit_layer.h>
 #include <string>
 #include <sstream>
 #include <math.h>
@@ -72,6 +73,8 @@ namespace base_local_planner{
       max_vel_th_ = config.max_vel_theta;
       min_vel_th_ = config.min_vel_theta;
       min_in_place_vel_th_ = config.min_in_place_vel_theta;
+
+      speed_limit_ratio_ = config.speed_limit_ratio;
 
       sim_time_ = config.sim_time;
       sim_granularity_ = config.sim_granularity;
@@ -572,6 +575,19 @@ namespace base_local_planner{
       min_vel_theta = max(min_vel_th_, vtheta - acc_theta * sim_time_);
     }
 
+    unsigned int mx, my;
+    unsigned char raw_value;
+    double speed_limit_ratio;
+    costmap_.worldToMap(x, y, mx, my);
+    raw_value = costmap_.getSpeedLimit(mx, my);
+    if ( raw_value == DEFAULT_SPEED ) {
+      speed_limit_ratio = 1.0; // default speed
+    }
+    else {
+      speed_limit_ratio = speed_limit_ratio_;
+    }
+    max_vel_x = std::max(std::min(max_vel_x, speed_limit_ratio * max_vel_x_), min_vel_x); // min_vel_x < max_vel_x < speed_limit_ratio * max_vel_x_
+    max_vel_theta = std::max(std::min(max_vel_theta, speed_limit_ratio * max_vel_th_), min_vel_theta); // min_vel_theta < max_vel_x < speed_limit_ratio * max_vel_th_
 
     //we want to sample the velocity space regularly
     double dvx = (max_vel_x - min_vel_x) / (vx_samples_ - 1);
@@ -771,6 +787,7 @@ namespace base_local_planner{
       for(unsigned int i = 0; i < y_vels_.size(); ++i){
         vtheta_samp = 0;
         vy_samp = y_vels_[i];
+        vy_samp = vy_samp * speed_limit_ratio;
         //sample completely horizontal trajectories
         generateTrajectory(x, y, theta, vx, vy, vtheta, vx_samp, vy_samp, vtheta_samp,
             acc_x, acc_y, acc_theta, impossible_cost, *comp_traj);
