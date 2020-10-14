@@ -129,16 +129,18 @@ namespace move_slow_and_clear
     boost::mutex::scoped_lock l(mutex_);
 
     //get the old maximum speed for the robot... we'll want to set it back
+    private_nh_.param("max_trans_param_name", max_trans_param_name_, std::string("max_trans_vel"));
+    private_nh_.param("max_rot_param_name", max_rot_param_name_, std::string("max_rot_vel"));
     if(!limit_set_)
     {
-      if(!planner_nh_.getParam("max_vel_trans", old_trans_speed_))
+      if(!planner_nh_.getParam(max_trans_param_name_, old_trans_speed_))
       {
-        ROS_ERROR("The planner %s, does not have the parameter max_vel_trans", planner_nh_.getNamespace().c_str());
+        ROS_ERROR("The planner %s, does not have the parameter %s", planner_nh_.getNamespace().c_str(), max_trans_param_name_.c_str());
       }
 
-      if(!planner_nh_.getParam("max_vel_theta", old_rot_speed_))
+      if(!planner_nh_.getParam(max_rot_param_name_, old_rot_speed_))
       {
-        ROS_ERROR("The planner %s, does not have the parameter max_vel_theta", planner_nh_.getNamespace().c_str());
+        ROS_ERROR("The planner %s, does not have the parameter %s", planner_nh_.getNamespace().c_str(), max_rot_param_name_.c_str());
       }
     }
 
